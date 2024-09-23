@@ -8,10 +8,35 @@
  * @date 2024-09-23
  *******************************************************************************************
  * @verbatim v0.9   支持硬件I2C
- * @todo	注释未完善
+ * @todo	注释未完善，软件iic未支持
  * 
  * @example 以OLED为例
- * 			
+ * 			定义一个I2C对象
+ * 				创建一个I2C_Init_Config_s类型结构体
+ * 				创建模块回调函数
+ * 				demo:
+ * 				I2C_Init_Config_s oled_init_config = {&hi2c1, 0x78, I2C_DMA_MODE};
+ * 
+ *				void oled_callback(Bsp_HW_I2C_c *register_instance)
+ *				{
+ *				}
+ *
+ *				Bsp_HW_I2C_c oled_module(&oled_init_config, oled_callback);
+ * @attention 创建模块回调函数时应注意，强烈建议加上以下switch语句，因为Master和Mem模式对应不同的回调函数
+ *			  强烈建议加入以下switch模板在模块回调函数里（可以用于区分中断来源）
+ *			 		switch(register_instance->Callback_type_)
+ *					{
+ *					case I2C_Master:
+ *						············
+ *						break;
+ *					case I2C_Mem:
+ *						············
+ *						break;
+ *					default:
+ *							while (1)
+ *								; // 未知传输模式, 程序停止 
+ *							break;
+ *					}
  * 
 ************************** Dongguan-University of Technology -ACE***************************/
 #include "bsp_i2c.hpp"
