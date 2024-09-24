@@ -75,6 +75,11 @@ Bsp_I2C_c::Bsp_I2C_c(I2C_Init_Config_s *I2C_Init_Config ,
     }
 }
 
+void Bsp_I2C_c::I2C_Init(void)
+{
+
+}
+
 /**
  * @brief 硬件I2C发送数据
  * 
@@ -355,5 +360,13 @@ uint8_t Bsp_I2C_c::readOneByte(uint8_t device_address, uint8_t register_address)
 	return data[0];
 }
 
-/************************************以下为模拟I2C */
+/************************************以下为模拟I2C *******************************************************************************/
+void Bsp_I2C_c::SW_I2C_SCL(uint8_t bit)
+{
+	if(bit)
+	{
+		HAL_GPIO_WritePin()
+	}
+}
+
 

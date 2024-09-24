@@ -73,6 +73,7 @@ CXX_SOURCES = \
 Core/Src/real_main.cpp \
 Bsp/adc/bsp_adc.cpp \
 Bsp/i2c/bsp_i2c.cpp \
+Bsp/dwt/bsp_dwt.cpp \
 module/oled/oled.cpp
 
 #==================================================================================================
@@ -156,6 +157,7 @@ CXX_INCLUDES =  \
 -ICore/Inc \
 -IBsp/adc \
 -IBsp/i2c \
+-IBsp/dwt \
 -Imodule/oled
 
 
