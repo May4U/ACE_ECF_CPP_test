@@ -7,7 +7,7 @@ uint8_t I2C1_MemTxFinshFlag = 1;
 uint8_t CountFlag = 0; 
 uint8_t BufFinshFlag = 0; 
 
-I2C_Init_Config_s oled_init_config = {&hi2c1, 0x78, I2C_DMA_MODE};
+HW_I2C_Config_s oled_init_config = {&hi2c1, 0x78, I2C_DMA_MODE};
 
 void oled_callback(Bsp_I2C_c *register_instance)
 {

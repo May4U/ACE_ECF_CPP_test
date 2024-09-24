@@ -57,6 +57,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define IIC_SCL_Pin GPIO_PIN_8
+#define IIC_SCL_GPIO_Port GPIOC
+#define IIC_SDA_Pin GPIO_PIN_9
+#define IIC_SDA_GPIO_Port GPIOC
 
 /* USER CODE BEGIN Private defines */
 

@@ -12,10 +12,10 @@
  * 
  * @example 以OLED为例
  * 			定义一个I2C对象
- * 				创建一个I2C_Init_Config_s类型结构体
+ * 				创建一个HW_I2C_Config_s类型结构体
  * 				创建模块回调函数
  * 				demo:
- * 				I2C_Init_Config_s oled_init_config = {&hi2c1, 0x78, I2C_DMA_MODE};
+ * 				HW_I2C_Config_s oled_init_config = {&hi2c1, 0x78, I2C_DMA_MODE};
  * 
  *				void oled_callback(Bsp_I2C_c *register_instance)
  *				{
@@ -42,12 +42,14 @@
 #include "bsp_i2c.hpp"
 
 //初始化硬件I2C实例指针数组
-Bsp_I2C_c *Bsp_I2C_c::hw_i2c_instance_[I2C_DEVICE_CNT] = {nullptr};
-//初始化硬件I2C实例指针数组下标
+Bsp_I2C_c *Bsp_I2C_c::i2c_instance_[I2C_DEVICE_CNT] = {nullptr};
+//初始化I2C实例指针数组下标
 uint8_t Bsp_I2C_c::idx_ = 0;
+//初始化硬件I2C实例指针数组下标
+uint8_t Bsp_I2C_c::hw_idx_ = 0;
 
 /**
- * @brief I2C构造函数
+ * @brief 硬件I2C构造函数
  * 
  * @param I2C_Init_Config ：
  *          I2C_HandleTypeDef *i2c_handle;       // i2c handle
@@ -55,17 +57,17 @@ uint8_t Bsp_I2C_c::idx_ = 0;
  *          I2C_Work_Mode_e work_mode;       // 工作模式
  * @param hw_iic_callback 
  */
-Bsp_I2C_c::Bsp_I2C_c(I2C_Init_Config_s *I2C_Init_Config ,
+Bsp_I2C_c::Bsp_I2C_c(HW_I2C_Config_s *I2C_Init_Config ,
                             void (*hw_iic_callback)(Bsp_I2C_c *I2C_Instance))
                             ://设置i2c实例和回调函数
-                            i2c_handle_(I2C_Init_Config->i2c_handle),
                             device_address_(I2C_Init_Config->device_address),
+							i2c_handle_(I2C_Init_Config->i2c_handle),
                             work_mode_(I2C_Init_Config->work_mode),
                             hw_iic_callback(hw_iic_callback)
 {
 	//将当前实例加入指针数组中
-	hw_i2c_instance_[idx_++] = this;
-	if (idx_ >= I2C_DEVICE_CNT)
+	i2c_instance_[idx_++] = this;
+	if ((hw_idx_++) >= I2C_DEVICE_CNT)
     {
         // 超过最大实例数，错误处理
         while (true)
@@ -75,11 +77,35 @@ Bsp_I2C_c::Bsp_I2C_c(I2C_Init_Config_s *I2C_Init_Config ,
     }
 }
 
-void Bsp_I2C_c::I2C_Init(void)
+/**
+ * @brief 模拟I2C构造函数
+ * 
+ * @param I2C_Init_Config 
+ * 			@arg GPIO_TypeDef *i2c_scl_gpiox		
+ * 			@arg uint16_t i2c_scl_pin
+ * 			@arg GPIO_TypeDef *i2c_sda_gpiox
+ * 			@arg uint16_t i2c_sda_pin
+ * 			@arg uint8_t device_address	没有可以乱写
+ * 			@example SW_I2C_Config_s oled_init_config = {GPIOC, GPIO_PIN_8, GPIOC, GPIO_PIN_9, 0x78}
+ */
+Bsp_I2C_c::Bsp_I2C_c(SW_I2C_Config_s *I2C_Init_Config)
+						://设置i2c实例
+						device_address_(I2C_Init_Config->device_address),
+						i2c_scl_gpiox_(I2C_Init_Config->i2c_scl_gpiox),
+						i2c_scl_pin_(I2C_Init_Config->i2c_scl_pin),
+						i2c_sda_gpiox_(I2C_Init_Config->i2c_sda_gpiox),
+						i2c_sda_pin_(I2C_Init_Config->i2c_sda_pin)				
+{
+	//将当前实例加入指针数组中
+	i2c_instance_[idx_++] = this;
+}
+
+void SW_I2C_Init(void)
 {
 
 }
 
+/**************************************************以下为硬件I2C函数********************************************************* */
 /**
  * @brief 硬件I2C发送数据
  * 
@@ -205,12 +231,12 @@ void Bsp_I2C_c::Bsp_HW_I2C_TxCallback(I2C_HandleTypeDef *hi2c, I2C_Callback_e Ca
     // 如果是当前i2c硬件发出的complete,且dev_address和之前发起接收的地址相同,同时回到函数不为空, 则调用回调函数
     for (uint8_t i = 0; i < idx_; i++)
     {
-        if (hi2c == hw_i2c_instance_[i]->i2c_handle_)
+        if (hi2c == i2c_instance_[i]->i2c_handle_)
         {
-            if (hw_i2c_instance_[i]->hw_iic_callback != NULL) // 回调函数不为空
+            if (i2c_instance_[i]->hw_iic_callback != NULL) // 回调函数不为空
 			{
-				hw_i2c_instance_[i]->hw_iic_callback(hw_i2c_instance_[i]);
-				hw_i2c_instance_[i]->Callback_type_ = Callback_type;
+				i2c_instance_[i]->hw_iic_callback(i2c_instance_[i]);
+				i2c_instance_[i]->Callback_type_ = Callback_type;
 			}
             return;
         }
@@ -361,12 +387,34 @@ uint8_t Bsp_I2C_c::readOneByte(uint8_t device_address, uint8_t register_address)
 }
 
 /************************************以下为模拟I2C *******************************************************************************/
+
+/**
+ * @brief 写模拟I2C的SCL函数
+ * 
+ * @param bit 1置高电平，0置低电平
+ */
 void Bsp_I2C_c::SW_I2C_SCL(uint8_t bit)
 {
 	if(bit)
 	{
-		HAL_GPIO_WritePin()
+		HAL_GPIO_WritePin(this->i2c_scl_gpiox_, this->i2c_scl_pin_, GPIO_PIN_SET);
 	}
+	else
+		HAL_GPIO_WritePin(this->i2c_scl_gpiox_, this->i2c_scl_pin_, GPIO_PIN_RESET);
 }
 
+/**
+ * @brief 写模拟I2C的SDA函数
+ * 
+ * @param bit 1置高电平，0置低电平
+ */
+void Bsp_I2C_c::SW_I2C_SDA(uint8_t bit)
+{
+	if(bit)
+	{
+		HAL_GPIO_WritePin(this->i2c_sda_gpiox_, this->i2c_sda_pin_, GPIO_PIN_SET);
+	}
+	else
+		HAL_GPIO_WritePin(this->i2c_sda_gpiox_, this->i2c_sda_pin_, GPIO_PIN_RESET);
+}
 
