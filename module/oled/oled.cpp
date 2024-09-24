@@ -9,7 +9,7 @@ uint8_t BufFinshFlag = 0;
 
 I2C_Init_Config_s oled_init_config = {&hi2c1, 0x78, I2C_DMA_MODE};
 
-void oled_callback(Bsp_HW_I2C_c *register_instance)
+void oled_callback(Bsp_I2C_c *register_instance)
 {
     switch(register_instance->Callback_type_)
     {
@@ -38,7 +38,7 @@ void oled_callback(Bsp_HW_I2C_c *register_instance)
     }
 }
 
-Bsp_HW_I2C_c oled_module(&oled_init_config, oled_callback);
+Bsp_I2C_c oled_module(&oled_init_config, oled_callback);
 
 
 

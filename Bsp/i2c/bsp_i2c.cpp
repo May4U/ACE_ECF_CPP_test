@@ -17,11 +17,11 @@
  * 				demo:
  * 				I2C_Init_Config_s oled_init_config = {&hi2c1, 0x78, I2C_DMA_MODE};
  * 
- *				void oled_callback(Bsp_HW_I2C_c *register_instance)
+ *				void oled_callback(Bsp_I2C_c *register_instance)
  *				{
  *				}
  *
- *				Bsp_HW_I2C_c oled_module(&oled_init_config, oled_callback);
+ *				Bsp_I2C_c oled_module(&oled_init_config, oled_callback);
  * @attention 创建模块回调函数时应注意，强烈建议加上以下switch语句，因为Master和Mem模式对应不同的回调函数
  *			  强烈建议加入以下switch模板在模块回调函数里（可以用于区分中断来源）
  *			 		switch(register_instance->Callback_type_)
@@ -42,9 +42,9 @@
 #include "bsp_i2c.hpp"
 
 //初始化硬件I2C实例指针数组
-Bsp_HW_I2C_c *Bsp_HW_I2C_c::hw_i2c_instance_[I2C_DEVICE_CNT] = {nullptr};
+Bsp_I2C_c *Bsp_I2C_c::hw_i2c_instance_[I2C_DEVICE_CNT] = {nullptr};
 //初始化硬件I2C实例指针数组下标
-uint8_t Bsp_HW_I2C_c::idx_ = 0;
+uint8_t Bsp_I2C_c::idx_ = 0;
 
 /**
  * @brief I2C构造函数
@@ -55,8 +55,8 @@ uint8_t Bsp_HW_I2C_c::idx_ = 0;
  *          I2C_Work_Mode_e work_mode;       // 工作模式
  * @param hw_iic_callback 
  */
-Bsp_HW_I2C_c::Bsp_HW_I2C_c(I2C_Init_Config_s *I2C_Init_Config ,
-                            void (*hw_iic_callback)(Bsp_HW_I2C_c *I2C_Instance))
+Bsp_I2C_c::Bsp_I2C_c(I2C_Init_Config_s *I2C_Init_Config ,
+                            void (*hw_iic_callback)(Bsp_I2C_c *I2C_Instance))
                             ://设置i2c实例和回调函数
                             i2c_handle_(I2C_Init_Config->i2c_handle),
                             device_address_(I2C_Init_Config->device_address),
@@ -81,7 +81,7 @@ Bsp_HW_I2C_c::Bsp_HW_I2C_c(I2C_Init_Config_s *I2C_Init_Config ,
  * @param data 待发送的数据首地址指针
  * @param size 发送长度
  */
-void Bsp_HW_I2C_c::HW_I2C_Transmit(uint8_t *data, uint16_t size)
+void Bsp_I2C_c::HW_I2C_Transmit(uint8_t *data, uint16_t size)
 {
     switch(this->work_mode_)
     {
@@ -107,7 +107,7 @@ void Bsp_HW_I2C_c::HW_I2C_Transmit(uint8_t *data, uint16_t size)
  * @param data 接收数据的首地址指针
  * @param size 接收长度
  */
-void Bsp_HW_I2C_c::HW_I2C_Receive(uint8_t * data, uint16_t size)
+void Bsp_I2C_c::HW_I2C_Receive(uint8_t * data, uint16_t size)
 {
     // 初始化接收缓冲区地址以及接受长度, 用于中断回调函数
     this->rx_buffer = data;
@@ -139,7 +139,7 @@ void Bsp_HW_I2C_c::HW_I2C_Receive(uint8_t * data, uint16_t size)
  * @param size 要读取或写入的数据长度
  * @param mem8bit_flag 从机内存地址是否为8位
  */
-void Bsp_HW_I2C_c::HW_I2CAccessMem(uint16_t mem_addr, uint8_t *data, uint16_t size, I2C_Mem_Mode_e mem_mode,uint8_t mem8bit_flag)
+void Bsp_I2C_c::HW_I2CAccessMem(uint16_t mem_addr, uint8_t *data, uint16_t size, I2C_Mem_Mode_e mem_mode,uint8_t mem8bit_flag)
 {
     uint16_t bit_flag = mem8bit_flag ? I2C_MEMADD_SIZE_8BIT : I2C_MEMADD_SIZE_16BIT;
     if (mem_mode == I2C_WRITE_MEM)
@@ -195,7 +195,7 @@ void Bsp_HW_I2C_c::HW_I2CAccessMem(uint16_t mem_addr, uint8_t *data, uint16_t si
  * @param hi2c 			I2C句柄
  * @param Callback_type	回调函数类型
  */
-void Bsp_HW_I2C_c::Bsp_HW_I2C_TxCallback(I2C_HandleTypeDef *hi2c, I2C_Callback_e Callback_type)
+void Bsp_I2C_c::Bsp_HW_I2C_TxCallback(I2C_HandleTypeDef *hi2c, I2C_Callback_e Callback_type)
 {
     // 如果是当前i2c硬件发出的complete,且dev_address和之前发起接收的地址相同,同时回到函数不为空, 则调用回调函数
     for (uint8_t i = 0; i < idx_; i++)
@@ -214,12 +214,12 @@ void Bsp_HW_I2C_c::Bsp_HW_I2C_TxCallback(I2C_HandleTypeDef *hi2c, I2C_Callback_e
 
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	Bsp_HW_I2C_c::Bsp_HW_I2C_TxCallback(hi2c, I2C_Master);
+	Bsp_I2C_c::Bsp_HW_I2C_TxCallback(hi2c, I2C_Master);
 }
 
 void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	Bsp_HW_I2C_c::Bsp_HW_I2C_TxCallback(hi2c, I2C_Mem);
+	Bsp_I2C_c::Bsp_HW_I2C_TxCallback(hi2c, I2C_Mem);
 }
 
 
@@ -231,7 +231,7 @@ void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c)
  */
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-    //Bsp_HW_I2C_c::Bsp_HW_I2C_Callback(hi2c);
+    //Bsp_I2C_c::Bsp_HW_I2C_Callback(hi2c);
 }
 
 /**
@@ -246,7 +246,7 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 
 
 /**********************************以下为旧iic搬运的函数（其实可以用    HW_I2CAccessMem     代替）************************************ */
-I2C_Result_t Bsp_HW_I2C_c::writeByte(uint8_t device_address, uint8_t register_address, uint8_t data)
+I2C_Result_t Bsp_I2C_c::writeByte(uint8_t device_address, uint8_t register_address, uint8_t data)
 {
 	uint8_t d[2];
 
@@ -269,7 +269,7 @@ I2C_Result_t Bsp_HW_I2C_c::writeByte(uint8_t device_address, uint8_t register_ad
 		return I2C_Result_Ok;
 }
 
-I2C_Result_t Bsp_HW_I2C_c::writeByte(uint8_t device_address, uint8_t data)
+I2C_Result_t Bsp_I2C_c::writeByte(uint8_t device_address, uint8_t data)
 {
 	uint8_t d[1];
 
@@ -292,7 +292,7 @@ I2C_Result_t Bsp_HW_I2C_c::writeByte(uint8_t device_address, uint8_t data)
 		return I2C_Result_Ok;
 }
 
-I2C_Result_t Bsp_HW_I2C_c::write2Bytes(uint8_t device_address, uint8_t register_address, uint16_t data)
+I2C_Result_t Bsp_I2C_c::write2Bytes(uint8_t device_address, uint8_t register_address, uint16_t data)
 {
 	uint8_t d[3];
 
@@ -316,7 +316,7 @@ I2C_Result_t Bsp_HW_I2C_c::write2Bytes(uint8_t device_address, uint8_t register_
 		return I2C_Result_Ok;
 }
 
-I2C_Result_t Bsp_HW_I2C_c::readMultiBytes(uint8_t device_address, uint8_t register_address, uint8_t* data, uint16_t count)
+I2C_Result_t Bsp_I2C_c::readMultiBytes(uint8_t device_address, uint8_t register_address, uint8_t* data, uint16_t count)
 {
 	//if (HAL_I2C_Master_Transmit(hi2c, (uint8_t)device_address, &register_address, 1, 1000) != HAL_OK) {
 	//device_address = 0x83;
@@ -345,7 +345,7 @@ I2C_Result_t Bsp_HW_I2C_c::readMultiBytes(uint8_t device_address, uint8_t regist
 	return I2C_Result_Ok;
 }
 
-uint8_t Bsp_HW_I2C_c::readOneByte(uint8_t device_address, uint8_t register_address)
+uint8_t Bsp_I2C_c::readOneByte(uint8_t device_address, uint8_t register_address)
 {
 	uint8_t data[1];
 	if(readMultiBytes(device_address, register_address, data, 1) == I2C_Result_Error)
@@ -354,4 +354,6 @@ uint8_t Bsp_HW_I2C_c::readOneByte(uint8_t device_address, uint8_t register_addre
 	}
 	return data[0];
 }
+
+/************************************以下为模拟I2C */
 

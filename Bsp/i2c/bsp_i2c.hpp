@@ -19,7 +19,13 @@ extern "C"{
 #endif
 
 
-/********************************************硬件I2C*****************************************************************/
+/* I2C工作类型枚举 */
+typedef enum
+{
+    Hardware_I2C = 0,   //硬件IIC
+    Software_I2C,       //模拟IIC
+} I2C_Type_e;
+
 /* I2C 工作模式枚举 */
 typedef enum
 {
@@ -42,7 +48,7 @@ typedef enum
 {
     I2C_Master = 0, //Master
     I2C_Mem,        //Mem
-}I2C_Callback_e;
+} I2C_Callback_e;
 
 /* I2C状态枚举 */
 typedef enum _I2C_Result_t {
@@ -59,10 +65,10 @@ typedef struct
 } I2C_Init_Config_s;
 
 
-class Bsp_HW_I2C_c
+class Bsp_I2C_c
 {
 public:
-    Bsp_HW_I2C_c(I2C_Init_Config_s *I2C_Init_Config ,void (*hw_iic_callback)(Bsp_HW_I2C_c* I2C_Instance));
+    Bsp_I2C_c(I2C_Init_Config_s *I2C_Init_Config ,void (*hw_iic_callback)(Bsp_I2C_c* I2C_Instance));
     void HW_I2C_Transmit(uint8_t *data, uint16_t size);     //I2C发送数据
     void HW_I2C_Receive(uint8_t *data, uint16_t size);      //I2C接收数据
     void HW_I2CAccessMem(uint16_t mem_addr, uint8_t *data, uint16_t size, I2C_Mem_Mode_e mem_mode, uint8_t mem8bit_flag);  //I2C读取从机寄存器(内存),只支持阻塞模式,超时默认为1ms
@@ -74,24 +80,17 @@ public:
     static void Bsp_HW_I2C_TxCallback(I2C_HandleTypeDef *hi2c, I2C_Callback_e Callback_type);
     I2C_Callback_e Callback_type_;          //回调类型
 private:
-    static Bsp_HW_I2C_c *hw_i2c_instance_[I2C_DEVICE_CNT];      //I2C实例指针数组
-    static uint8_t idx_;                                        // 全局硬件I2C实例索引,每次有新的模块注册会自增
+    static Bsp_I2C_c *hw_i2c_instance_[I2C_DEVICE_CNT];      //I2C实例指针数组
+    static uint8_t idx_;                                        // 全局I2C实例索引,每次有新的模块注册会自增
+    static uint8_t hw_idx_;                                     //硬件I2C实例数量
     I2C_HandleTypeDef *i2c_handle_ = nullptr;                             // i2c句柄
     uint8_t device_address_;
     I2C_Work_Mode_e work_mode_;             //工作模式
     uint8_t *rx_buffer;                     // 接收缓冲区指针
     uint8_t rx_len;                         // 接收长度 
-    void (*hw_iic_callback)(Bsp_HW_I2C_c* I2C_Instance);        // 接收完成后的回调函数
+    void (*hw_iic_callback)(Bsp_I2C_c* I2C_Instance);        // 接收完成后的回调函数
 };
 
 
-/*******************************************模拟I2C*********************************************************************/
-class Bsp_SW_I2C_c
-{
-public:
-
-private:
-
-};
 
 #endif // !BSP_I2C_HPP
