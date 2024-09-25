@@ -117,7 +117,6 @@ BIN = $(CP) -O binary -S
  
 #######################################
 # CFLAGS
-cflags = -lpthread -ldl -lstdc++
 #######################################
 # cpu
 CPU = -mcpu=cortex-m4
@@ -194,7 +193,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32F407VETx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
+LIBS = -lstdc++ -lc -lm -lnosys 
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
