@@ -41,6 +41,11 @@
 ************************** Dongguan-University of Technology -ACE***************************/
 #include "bsp_i2c.hpp"
 
+
+
+// 定义一个BSP_DWT_c实例指针，并调用ECF_Get_DwtInstance()函数让外部实例指针指向唯一实例的地址
+BSP_DWT_c* dwt_time = BSP_DWT_c::ECF_Get_DwtInstance();
+
 //初始化硬件I2C实例指针数组
 Bsp_I2C_c *Bsp_I2C_c::i2c_instance_[I2C_DEVICE_CNT] = {nullptr};
 //初始化I2C实例指针数组下标
@@ -81,9 +86,9 @@ Bsp_I2C_c::Bsp_I2C_c(HW_I2C_Config_s *I2C_Init_Config ,
  * @brief 模拟I2C构造函数
  * 
  * @param I2C_Init_Config 
- * 			@arg GPIO_TypeDef *i2c_scl_gpiox		
+ * 			@arg GPIO_TypeDef *i2c_scl_port		
  * 			@arg uint16_t i2c_scl_pin
- * 			@arg GPIO_TypeDef *i2c_sda_gpiox
+ * 			@arg GPIO_TypeDef *i2c_sda_port
  * 			@arg uint16_t i2c_sda_pin
  * 			@arg uint8_t device_address	没有可以乱写
  * 			@example SW_I2C_Config_s oled_init_config = {GPIOC, GPIO_PIN_8, GPIOC, GPIO_PIN_9, 0x78}
@@ -91,9 +96,9 @@ Bsp_I2C_c::Bsp_I2C_c(HW_I2C_Config_s *I2C_Init_Config ,
 Bsp_I2C_c::Bsp_I2C_c(SW_I2C_Config_s *I2C_Init_Config)
 						://设置i2c实例
 						device_address_(I2C_Init_Config->device_address),
-						i2c_scl_gpiox_(I2C_Init_Config->i2c_scl_gpiox),
+						i2c_scl_port_(I2C_Init_Config->i2c_scl_port),
 						i2c_scl_pin_(I2C_Init_Config->i2c_scl_pin),
-						i2c_sda_gpiox_(I2C_Init_Config->i2c_sda_gpiox),
+						i2c_sda_port_(I2C_Init_Config->i2c_sda_port),
 						i2c_sda_pin_(I2C_Init_Config->i2c_sda_pin)				
 {
 	//将当前实例加入指针数组中
@@ -389,18 +394,48 @@ uint8_t Bsp_I2C_c::readOneByte(uint8_t device_address, uint8_t register_address)
 /************************************以下为模拟I2C *******************************************************************************/
 
 /**
+ * @brief SDA引脚设置输出模式
+ * @param  无
+ * @return 无
+ */
+static void Soft_IIC_Output(void)
+{
+    GPIO_InitTypeDef SOFT_IIC_GPIO_STRUCT;
+    SOFT_IIC_GPIO_STRUCT.Mode = GPIO_MODE_OUTPUT_PP;
+    SOFT_IIC_GPIO_STRUCT.Pin = IIC_SDA_PIN;
+    SOFT_IIC_GPIO_STRUCT.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    HAL_GPIO_Init(IIC_SDA_PORT, &SOFT_IIC_GPIO_STRUCT);
+}
+
+/**
+ * @brief SDA引脚设置输入模式
+ * @param  无
+ * @return 无
+ */
+static void Soft_IIC_Input(void)
+{
+    GPIO_InitTypeDef SOFT_IIC_GPIO_STRUCT;
+    SOFT_IIC_GPIO_STRUCT.Mode = GPIO_MODE_INPUT;
+    SOFT_IIC_GPIO_STRUCT.Pin = IIC_SDA_PIN;
+    SOFT_IIC_GPIO_STRUCT.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    HAL_GPIO_Init(IIC_SDA_PORT, &SOFT_IIC_GPIO_STRUCT);
+}
+
+/**
  * @brief 写模拟I2C的SCL函数
  * 
  * @param bit 1置高电平，0置低电平
  */
-void Bsp_I2C_c::SW_I2C_SCL(uint8_t bit)
+void Bsp_I2C_c::SW_I2C_W_SCL(uint8_t bit)
 {
 	if(bit)
 	{
-		HAL_GPIO_WritePin(this->i2c_scl_gpiox_, this->i2c_scl_pin_, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(this->i2c_scl_port_, this->i2c_scl_pin_, GPIO_PIN_SET);
 	}
 	else
-		HAL_GPIO_WritePin(this->i2c_scl_gpiox_, this->i2c_scl_pin_, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(this->i2c_scl_port_, this->i2c_scl_pin_, GPIO_PIN_RESET);
 }
 
 /**
@@ -408,13 +443,122 @@ void Bsp_I2C_c::SW_I2C_SCL(uint8_t bit)
  * 
  * @param bit 1置高电平，0置低电平
  */
-void Bsp_I2C_c::SW_I2C_SDA(uint8_t bit)
+void Bsp_I2C_c::SW_I2C_W_SDA(uint8_t bit)
 {
 	if(bit)
 	{
-		HAL_GPIO_WritePin(this->i2c_sda_gpiox_, this->i2c_sda_pin_, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(this->i2c_sda_port_, this->i2c_sda_pin_, GPIO_PIN_SET);
 	}
 	else
-		HAL_GPIO_WritePin(this->i2c_sda_gpiox_, this->i2c_sda_pin_, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(this->i2c_sda_port_, this->i2c_sda_pin_, GPIO_PIN_RESET);
+}
+
+/**
+ * @brief 读模拟I2C SCL的函数
+ * 
+ * @return uint8_t 
+ */
+uint8_t Bsp_I2C_c::SW_I2C_R_SCL(void)
+{
+	uint8_t BitValue;
+	BitValue = HAL_GPIO_ReadPin(this->i2c_scl_port_, this->i2c_scl_pin_);
+	return BitValue;
+}
+
+/**
+ * @brief 读模拟I2C SDA的函数
+ * 
+ * @return uint8_t 
+ */
+uint8_t Bsp_I2C_c::SW_I2C_R_SDA(void)
+{
+	uint8_t BitValue;
+	BitValue = HAL_GPIO_ReadPin(this->i2c_sda_port_, this->i2c_sda_pin_);
+	return BitValue;
+}
+
+/**
+ * @brief I2C起始信号
+ * 
+ */
+void Bsp_I2C_c::SW_I2C_Start(void)
+{
+	BSP_DWT_c* dwt_time = BSP_DWT_c::ECF_Get_DwtInstance();
+	I2C_SCL_L();
+    I2C_SDA_H();
+    I2C_SCL_H();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    I2C_SDA_L();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    I2C_SCL_L();
+}
+
+/**
+ * @brief IIC停止信号
+ * 
+ */
+void Bsp_I2C_c::SW_I2C_Stop(void)
+{
+    I2C_SCL_L();
+    I2C_SDA_L();
+    I2C_SCL_H();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    I2C_SDA_H();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+}
+
+/**
+ * @brief IIC应答信号
+ * @param  无
+ * @return 无
+ */
+void Bsp_I2C_c::SW_I2C_ACK(void)
+{
+    I2C_SCL_L();
+    I2C_SDA_L();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    I2C_SCL_H();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    I2C_SCL_L();
+}
+
+/**
+ * @brief IIC无应答信号
+ * @param  无
+ * @return 无
+ */
+void Bsp_I2C_c::SW_I2C_NACK(void)
+{
+    I2C_SCL_L();
+    I2C_SDA_H();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    I2C_SCL_H();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+}
+
+/**
+ * @brief IIC等待应答信号
+ * @param  无
+ * @return 0无应答  1有应答
+ */
+uint8_t Soft_IIC_Wait_ACK(void)
+{
+    uint8_t wait;
+    Soft_IIC_Output(); 
+    I2C_SDA_H();
+    Soft_IIC_Input();
+    I2C_SCL_H();
+    IIC_Delay(IIC_DELAY_TIME);
+    while (HAL_GPIO_ReadPin(IIC_SDA_PORT, IIC_SDA_PIN))
+    {
+        wait++;
+        if (wait > 200)
+        {
+            Soft_IIC_Stop();
+            return 0;
+        }
+    }
+    IIC_SCL_L();
+    return 1;
 }
 

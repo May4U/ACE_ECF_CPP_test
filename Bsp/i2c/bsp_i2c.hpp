@@ -1,8 +1,16 @@
 #ifndef BSP_I2C_HPP
 #define BSP_I2C_HPP
 
-#define I2C_DEVICE_CNT 2   // C板引出了I2C2和I2C3
-#define MX_I2C_SLAVE_CNT 8 // 最大从机数目,根据需要修改
+#define I2C_DEVICE_CNT 2    // C板引出了I2C2和I2C3
+#define MX_I2C_SLAVE_CNT 8  // 最大从机数目,根据需要修改
+#define I2C_DELAY_TIME 0.005 // dwt暂时只支持ms级延时
+
+
+#define I2C_SCL_H()     SW_I2C_W_SCL(1)
+#define I2C_SCL_L()     SW_I2C_W_SCL(0)
+#define I2C_SDA_H()     SW_I2C_W_SDA(1)
+#define I2C_SDA_L()     SW_I2C_W_SDA(0)
+
 
 #ifdef __cplusplus
 extern "C"{
@@ -53,10 +61,18 @@ typedef enum _I2C_Result_t {
 } I2C_Result_t;
 
 /* 模拟I2C应答信号状态枚举 */
-typedef enum{
+typedef enum
+{
     NACK = 0,
     ACK  = 1
 } I2C_ACK_STATUS_e;
+
+/* 模拟I2C线路读写状态 */
+typedef enum
+{
+    Read =0,
+    Write,
+} I2C_RW_Status_e;
 
 /* 硬件I2C 初始化结构体配置 */
 typedef struct 
@@ -69,9 +85,9 @@ typedef struct
 /* 模拟I2C 初始化结构体配置 */
 typedef struct
 {
-    GPIO_TypeDef *i2c_scl_gpiox;         //i2c scl的gpio端口配置
+    GPIO_TypeDef *i2c_scl_port;         //i2c scl的gpio端口配置
     uint16_t i2c_scl_pin;          //i2c scl的gpio引脚配置
-    GPIO_TypeDef *i2c_sda_gpiox;         //i2c sda的gpio端口配置
+    GPIO_TypeDef *i2c_sda_port;         //i2c sda的gpio端口配置
     uint16_t i2c_sda_pin;          //i2c sda的gpio引脚配置
     uint8_t device_address;            // 设置写入数据的地址
 } SW_I2C_Config_s;
@@ -98,8 +114,18 @@ public:
     static void Bsp_HW_I2C_TxCallback(I2C_HandleTypeDef *hi2c, I2C_Callback_e Callback_type);
     I2C_Callback_e Callback_type_;          //回调类型
     /*模拟I2C函数*/
-    void SW_I2C_SCL(uint8_t bit);           //写SCL   
-    void SW_I2C_SDA(uint8_t bit);           //写SDA
+    void SW_I2C_W_SCL(uint8_t bit);           //写SCL   
+    void SW_I2C_W_SDA(uint8_t bit);           //写SDA
+    uint8_t SW_I2C_R_SCL(void);           //读SCL   
+    uint8_t SW_I2C_R_SDA(void);           //读SDA
+    //void SW_I2C_Init(void);
+    void SW_I2C_Start(void);                                //I2C起始信号
+    void SW_I2C_Stop(void);                                 //I2C停止信号
+    void SW_I2C_ACK(void);                                  //I2C应答信号
+    void SW_I2C_NACK(void);                                 //I2C无应答信号
+    uint8_t SW_I2C_Wait_ACK(void);                          //I2C等待应答信号
+    uint8_t SW_I2C_Write_Byte(uint8_t Byte);                //I2C写入单个数据
+    uint8_t SW_I2C_Recv_Byte(I2C_ACK_STATUS_e ack_sta);           //I2C读取单个数据
 private:
     static Bsp_I2C_c *i2c_instance_[I2C_DEVICE_CNT];      //I2C实例指针数组
     static uint8_t idx_;                                        // 全局I2C实例索引,每次有新的模块注册会自增
@@ -111,9 +137,9 @@ private:
     I2C_HandleTypeDef *i2c_handle_ = nullptr;          // i2c句柄
     I2C_Work_Mode_e work_mode_;                       //工作模式
     //软件的
-    GPIO_TypeDef *i2c_scl_gpiox_;         //i2c scl的gpio端口配置
+    GPIO_TypeDef *i2c_scl_port_;         //i2c scl的gpio端口配置
     uint16_t i2c_scl_pin_;          //i2c scl的gpio引脚配置
-    GPIO_TypeDef *i2c_sda_gpiox_;         //i2c sda的gpio端口配置
+    GPIO_TypeDef *i2c_sda_port_;         //i2c sda的gpio端口配置
     uint16_t i2c_sda_pin_;          //i2c sda的gpio引脚配置
     
     uint8_t *rx_buffer;                     // 接收缓冲区指针
