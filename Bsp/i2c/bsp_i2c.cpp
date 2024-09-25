@@ -398,7 +398,7 @@ uint8_t Bsp_I2C_c::readOneByte(uint8_t device_address, uint8_t register_address)
  * @param  无
  * @return 无
  */
-static void Soft_IIC_Output(void)
+static Bsp_I2C_c::void SW_IIC_Output(void)
 {
     GPIO_InitTypeDef SOFT_IIC_GPIO_STRUCT;
     SOFT_IIC_GPIO_STRUCT.Mode = GPIO_MODE_OUTPUT_PP;
@@ -413,7 +413,7 @@ static void Soft_IIC_Output(void)
  * @param  无
  * @return 无
  */
-static void Soft_IIC_Input(void)
+static Bsp_I2C_c::void SW_IIC_Input(void)
 {
     GPIO_InitTypeDef SOFT_IIC_GPIO_STRUCT;
     SOFT_IIC_GPIO_STRUCT.Mode = GPIO_MODE_INPUT;
