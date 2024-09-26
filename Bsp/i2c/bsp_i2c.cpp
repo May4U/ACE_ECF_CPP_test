@@ -398,14 +398,14 @@ uint8_t Bsp_I2C_c::readOneByte(uint8_t device_address, uint8_t register_address)
  * @param  无
  * @return 无
  */
-static Bsp_I2C_c::void SW_IIC_Output(void)
+void Bsp_I2C_c::SW_I2C_Output(void)
 {
-    GPIO_InitTypeDef SOFT_IIC_GPIO_STRUCT;
-    SOFT_IIC_GPIO_STRUCT.Mode = GPIO_MODE_OUTPUT_PP;
-    SOFT_IIC_GPIO_STRUCT.Pin = IIC_SDA_PIN;
-    SOFT_IIC_GPIO_STRUCT.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitTypeDef SW_I2C_GPIO_STRUCT;
+    SW_I2C_GPIO_STRUCT.Mode = GPIO_MODE_OUTPUT_PP;
+    SW_I2C_GPIO_STRUCT.Pin = this->i2c_sda_pin_;
+    SW_I2C_GPIO_STRUCT.Speed = GPIO_SPEED_FREQ_HIGH;
 
-    HAL_GPIO_Init(IIC_SDA_PORT, &SOFT_IIC_GPIO_STRUCT);
+    HAL_GPIO_Init(this->i2c_sda_port_, &SW_I2C_GPIO_STRUCT);
 }
 
 /**
@@ -413,14 +413,14 @@ static Bsp_I2C_c::void SW_IIC_Output(void)
  * @param  无
  * @return 无
  */
-static Bsp_I2C_c::void SW_IIC_Input(void)
+void Bsp_I2C_c::SW_I2C_Input(void)
 {
-    GPIO_InitTypeDef SOFT_IIC_GPIO_STRUCT;
-    SOFT_IIC_GPIO_STRUCT.Mode = GPIO_MODE_INPUT;
-    SOFT_IIC_GPIO_STRUCT.Pin = IIC_SDA_PIN;
-    SOFT_IIC_GPIO_STRUCT.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitTypeDef SW_I2C_GPIO_STRUCT;
+    SW_I2C_GPIO_STRUCT.Mode = GPIO_MODE_INPUT;
+    SW_I2C_GPIO_STRUCT.Pin = this->i2c_sda_pin_;
+    SW_I2C_GPIO_STRUCT.Speed = GPIO_SPEED_FREQ_HIGH;
 
-    HAL_GPIO_Init(IIC_SDA_PORT, &SOFT_IIC_GPIO_STRUCT);
+    HAL_GPIO_Init(this->i2c_sda_port_, &SW_I2C_GPIO_STRUCT);
 }
 
 /**
@@ -483,7 +483,6 @@ uint8_t Bsp_I2C_c::SW_I2C_R_SDA(void)
  */
 void Bsp_I2C_c::SW_I2C_Start(void)
 {
-	BSP_DWT_c* dwt_time = BSP_DWT_c::ECF_Get_DwtInstance();
 	I2C_SCL_L();
     I2C_SDA_H();
     I2C_SCL_H();
@@ -541,24 +540,110 @@ void Bsp_I2C_c::SW_I2C_NACK(void)
  * @param  无
  * @return 0无应答  1有应答
  */
-uint8_t Soft_IIC_Wait_ACK(void)
+uint8_t Bsp_I2C_c::SW_I2C_Wait_ACK(void)
 {
-    uint8_t wait;
-    Soft_IIC_Output(); 
+    uint8_t wait = 0;
+    SW_I2C_Output(); 
     I2C_SDA_H();
-    Soft_IIC_Input();
+    SW_I2C_Input();
     I2C_SCL_H();
-    IIC_Delay(IIC_DELAY_TIME);
-    while (HAL_GPIO_ReadPin(IIC_SDA_PORT, IIC_SDA_PIN))
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    while (HAL_GPIO_ReadPin(this->i2c_scl_port_, this->i2c_sda_pin_))
     {
         wait++;
         if (wait > 200)
         {
-            Soft_IIC_Stop();
+            SW_I2C_Stop();
             return 0;
         }
     }
-    IIC_SCL_L();
+    I2C_SCL_L();
     return 1;
+}
+
+/**
+ * @brief I2C写数据1
+ * 
+ */
+void Bsp_I2C_c::SW_I2C_W_H(void)
+{
+	I2C_SCL_L();
+    I2C_SDA_H();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    I2C_SCL_H();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    I2C_SCL_L();
+}
+
+/**
+ * @brief I2C写数据0
+ * 
+ */
+void Bsp_I2C_c::SW_I2C_W_L(void)
+{
+	I2C_SCL_L();
+    I2C_SDA_L();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    I2C_SCL_H();
+    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    I2C_SCL_L();
+}
+
+/**
+ * @brief IIC写入单个数据
+ * @param  无
+ * @return 应答信号, 0无应答 1有应答
+ * @attention 应答信号暂时还是删除，以江科大的为主
+ */
+uint8_t Bsp_I2C_c::SW_I2C_Write_Byte(uint8_t Byte)
+{
+	uint8_t i;
+	SW_I2C_Output();
+	for(i = 0x80; i != 0; i >>= 1)
+	{
+		if(Byte & i)
+		{
+			SW_I2C_W_H();
+		}
+		else
+		{
+			SW_I2C_W_L();
+		}
+	}
+	return (0);
+}
+
+/**
+ * @brief IIC读一个数据
+ * @param  ACK:应答 NACK:不应答
+ * @return 返回读到的数据
+ */
+uint8_t Bsp_I2C_c::SW_I2C_Recv_Byte(I2C_ACK_STATUS_e ack_sta)
+{
+	uint8_t Byte = 0, i;
+	SW_I2C_Input();
+	I2C_SCL_H();
+	dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+	for(i = 0x80; i != 0; i >>= 1)
+	{
+		if(HAL_GPIO_ReadPin(this->i2c_sda_port_, this->i2c_sda_pin_) == 1)
+		{
+			Byte |= i;
+		}
+		dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+		I2C_SCL_L();
+		dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+		I2C_SCL_H();
+		dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+	}
+	if(ack_sta == ACK)
+	{
+		SW_I2C_ACK();
+	}
+	else
+	{
+		SW_I2C_NACK();
+	}
+	return Byte;
 }
 

@@ -5,7 +5,7 @@
 #define MX_I2C_SLAVE_CNT 8  // 最大从机数目,根据需要修改
 #define I2C_DELAY_TIME 0.005 // dwt暂时只支持ms级延时
 
-
+/*I2C线路高低电平设置，并不是逻辑电平*/
 #define I2C_SCL_H()     SW_I2C_W_SCL(1)
 #define I2C_SCL_L()     SW_I2C_W_SCL(0)
 #define I2C_SDA_H()     SW_I2C_W_SDA(1)
@@ -118,15 +118,19 @@ public:
     void SW_I2C_W_SDA(uint8_t bit);           //写SDA
     uint8_t SW_I2C_R_SCL(void);           //读SCL   
     uint8_t SW_I2C_R_SDA(void);           //读SDA
+    void SW_I2C_Output(void);        //设置I2C为输出
+    void SW_I2C_Input(void);         //设置I2C为输入
     //void SW_I2C_Init(void);
     void SW_I2C_Start(void);                                //I2C起始信号
     void SW_I2C_Stop(void);                                 //I2C停止信号
     void SW_I2C_ACK(void);                                  //I2C应答信号
     void SW_I2C_NACK(void);                                 //I2C无应答信号
     uint8_t SW_I2C_Wait_ACK(void);                          //I2C等待应答信号
+    void SW_I2C_W_H(void);                                  //I2C写数据1
+    void SW_I2C_W_L(void);                                  //I2C写数据0
     uint8_t SW_I2C_Write_Byte(uint8_t Byte);                //I2C写入单个数据
     uint8_t SW_I2C_Recv_Byte(I2C_ACK_STATUS_e ack_sta);           //I2C读取单个数据
-private:
+protected:
     static Bsp_I2C_c *i2c_instance_[I2C_DEVICE_CNT];      //I2C实例指针数组
     static uint8_t idx_;                                        // 全局I2C实例索引,每次有新的模块注册会自增
     static uint8_t hw_idx_;                                     //硬件I2C实例数量
