@@ -44,7 +44,7 @@
 
 
 // 定义一个BSP_DWT_c实例指针，并调用ECF_Get_DwtInstance()函数让外部实例指针指向唯一实例的地址
-BSP_DWT_c* dwt_time = BSP_DWT_c::ECF_Get_DwtInstance();
+BSP_DWT_c* dwt_time_i2c = BSP_DWT_c::ECF_Get_DwtInstance();
 
 //初始化硬件I2C实例指针数组
 Bsp_I2C_c *Bsp_I2C_c::i2c_instance_[I2C_DEVICE_CNT] = {nullptr};
@@ -103,9 +103,11 @@ Bsp_I2C_c::Bsp_I2C_c(SW_I2C_Config_s *I2C_Init_Config)
 {
 	//将当前实例加入指针数组中
 	i2c_instance_[idx_++] = this;
+	//I2C_SDA_H();
+	//I2C_SCL_H();
 }
 
-void SW_I2C_Init(void)
+void Bsp_I2C_c::SW_I2C_Init(void)
 {
 
 }
@@ -483,13 +485,13 @@ uint8_t Bsp_I2C_c::SW_I2C_R_SDA(void)
  */
 void Bsp_I2C_c::SW_I2C_Start(void)
 {
+	I2C_SDA_H();
+	dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
+	I2C_SCL_H();
+	dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
+	I2C_SDA_L();
+	dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
 	I2C_SCL_L();
-    I2C_SDA_H();
-    I2C_SCL_H();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
-    I2C_SDA_L();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
-    I2C_SCL_L();
 }
 
 /**
@@ -498,12 +500,11 @@ void Bsp_I2C_c::SW_I2C_Start(void)
  */
 void Bsp_I2C_c::SW_I2C_Stop(void)
 {
-    I2C_SCL_L();
-    I2C_SDA_L();
-    I2C_SCL_H();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
-    I2C_SDA_H();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+	I2C_SDA_L();
+	dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
+	I2C_SCL_H();
+	dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
+	I2C_SDA_H();
 }
 
 /**
@@ -515,9 +516,9 @@ void Bsp_I2C_c::SW_I2C_ACK(void)
 {
     I2C_SCL_L();
     I2C_SDA_L();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
     I2C_SCL_H();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
     I2C_SCL_L();
 }
 
@@ -530,9 +531,9 @@ void Bsp_I2C_c::SW_I2C_NACK(void)
 {
     I2C_SCL_L();
     I2C_SDA_H();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
     I2C_SCL_H();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
 }
 
 /**
@@ -542,23 +543,26 @@ void Bsp_I2C_c::SW_I2C_NACK(void)
  */
 uint8_t Bsp_I2C_c::SW_I2C_Wait_ACK(void)
 {
-    uint8_t wait = 0;
-    SW_I2C_Output(); 
-    I2C_SDA_H();
-    SW_I2C_Input();
-    I2C_SCL_H();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
-    while (HAL_GPIO_ReadPin(this->i2c_scl_port_, this->i2c_sda_pin_))
-    {
-        wait++;
-        if (wait > 200)
-        {
-            SW_I2C_Stop();
-            return 0;
-        }
-    }
-    I2C_SCL_L();
-    return 1;
+    // uint8_t wait = 0;
+    // SW_I2C_Output(); 
+    // I2C_SDA_H();
+    // SW_I2C_Input();
+    // I2C_SCL_H();
+    // dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
+    // while (HAL_GPIO_ReadPin(this->i2c_scl_port_, this->i2c_sda_pin_))
+    // {
+    //     wait++;
+    //     if (wait > 200)
+    //     {
+    //         SW_I2C_Stop();
+    //         return 0;
+    //     }
+    // }
+    // I2C_SCL_L();
+    // return 1;
+	I2C_SDA_L();
+	I2C_SCL_H();
+	I2C_SCL_L();
 }
 
 /**
@@ -569,9 +573,9 @@ void Bsp_I2C_c::SW_I2C_W_H(void)
 {
 	I2C_SCL_L();
     I2C_SDA_H();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
     I2C_SCL_H();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
     I2C_SCL_L();
 }
 
@@ -583,9 +587,9 @@ void Bsp_I2C_c::SW_I2C_W_L(void)
 {
 	I2C_SCL_L();
     I2C_SDA_L();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
     I2C_SCL_H();
-    dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+    dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
     I2C_SCL_L();
 }
 
@@ -598,19 +602,19 @@ void Bsp_I2C_c::SW_I2C_W_L(void)
 uint8_t Bsp_I2C_c::SW_I2C_Write_Byte(uint8_t Byte)
 {
 	uint8_t i;
-	SW_I2C_Output();
-	for(i = 0x80; i != 0; i >>= 1)
+	for (i = 0; i < 8; i++)
 	{
-		if(Byte & i)
-		{
-			SW_I2C_W_H();
-		}
-		else
-		{
-			SW_I2C_W_L();
-		}
+		SW_I2C_W_SDA(Byte & (0x80 >> i));
+		dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
+		SW_I2C_W_SCL(1);
+		dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
+		SW_I2C_W_SCL(0);
 	}
-	return (0);
+	dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
+	SW_I2C_W_SCL(1);	//额外的一个时钟，不处理应答信号
+	dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
+	SW_I2C_W_SCL(0);
+	//dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
 }
 
 /**
@@ -623,18 +627,18 @@ uint8_t Bsp_I2C_c::SW_I2C_Recv_Byte(I2C_ACK_STATUS_e ack_sta)
 	uint8_t Byte = 0, i;
 	SW_I2C_Input();
 	I2C_SCL_H();
-	dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+	dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
 	for(i = 0x80; i != 0; i >>= 1)
 	{
 		if(HAL_GPIO_ReadPin(this->i2c_sda_port_, this->i2c_sda_pin_) == 1)
 		{
 			Byte |= i;
 		}
-		dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+		dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
 		I2C_SCL_L();
-		dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+		dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
 		I2C_SCL_H();
-		dwt_time->ECF_DWT_Delay(I2C_DELAY_TIME);
+		dwt_time_i2c->ECF_DWT_Delay(I2C_DELAY_TIME);
 	}
 	if(ack_sta == ACK)
 	{

@@ -3,7 +3,7 @@
 
 #define I2C_DEVICE_CNT 2    // C板引出了I2C2和I2C3
 #define MX_I2C_SLAVE_CNT 8  // 最大从机数目,根据需要修改
-#define I2C_DELAY_TIME 0.005 // dwt暂时只支持ms级延时
+#define I2C_DELAY_TIME 0.002 // dwt暂时只支持ms级延时
 
 /*I2C线路高低电平设置，并不是逻辑电平*/
 #define I2C_SCL_H()     SW_I2C_W_SCL(1)

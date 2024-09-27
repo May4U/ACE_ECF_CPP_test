@@ -158,7 +158,7 @@ void BSP_DWT_c::ECF_DWT_Delay(float Delay)
 {
     uint32_t tickstart = DWT->CYCCNT;
     float wait = Delay;
-    while ((DWT->CYCCNT - tickstart) < wait * (float)this->CPU_FREQ_Hz);
+    while ((DWT->CYCCNT - tickstart) < wait * this->CPU_FREQ_Hz);
 }
 
 /**

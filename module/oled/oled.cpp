@@ -183,6 +183,7 @@ uint8_t OLED_Init_CMD[ ] =
 void OLED_init(void)
 {
 	oled_module.HW_I2CAccessMem(0x00, OLED_Init_CMD, 29, I2C_WRITE_MEM, I2C_MEMADD_SIZE_8BIT);
+  
 }
 
 /**

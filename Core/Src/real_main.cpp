@@ -22,7 +22,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "real_main.hpp"
-#include "oled.hpp"
+#include "oled_sw.hpp"
+#include "bsp_dwt.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,7 +55,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+BSP_DWT_c* dwt_time_test = BSP_DWT_c::ECF_Get_DwtInstance();
 /* USER CODE END 0 */
 
 /**
@@ -73,7 +74,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  HAL_Delay(168);
+  OLED_Init();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -89,21 +91,26 @@ int main(void)
   MX_I2C1_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  HAL_Delay(200);
-	OLED_init();
-	HAL_Delay(200);
-	//OLED_operate_gram(PEN_CLEAR);//???
-	//OLED_show_string(0,5,(uint8_t*)"show string"); 
-	OLED_show_num(1, 10, 50, 0, 2);
-	OLED_refresh_gram();//????
+  // HAL_Delay(200);
+	// OLED_init();
+	// HAL_Delay(200);
+	// //OLED_operate_gram(PEN_CLEAR);//???
+	// //OLED_show_string(0,5,(uint8_t*)"show string"); 
+	// OLED_show_num(1, 10, 50, 0, 2);
+	// OLED_refresh_gram();//????
   /* USER CODE END 2 */
-
+    
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-
+    //OLED_ShowChar(1,1,'A');//显示一个字符
+		//OLED_ShowString(1,3,"HelloWorld");//显示字符串
+		OLED_ShowNum(2,1,12345,5);//显示无符号十进制数
+		//OLED_ShowSignedNum(2,7,-66,2);//显示有符号十进制数
+		//OLED_ShowHexNum(3,1,0XAA66,4);//显示16进制数字
+		//OLED_ShowBinNum(4,1,0XAA55,16);//显示二进制
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
