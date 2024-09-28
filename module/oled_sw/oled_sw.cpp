@@ -1,10 +1,74 @@
 #include "oled_sw.hpp"
 
+BSP_DWT_c* dwt_time_oled = BSP_DWT_c::ECF_Get_DwtInstance();
+
 SW_I2C_Config_s oled_init_config = {GPIOC, GPIO_PIN_8, GPIOC, GPIO_PIN_9, 0x78};
 
 Bsp_I2C_c oled_module(&oled_init_config);
 
 
+ 
+/*引脚初始化*/
+void OLED_I2C_Init(void)
+{
+	
+	oled_module.SW_I2C_W_SCL(1);
+	oled_module.SW_I2C_W_SDA(1);
+}
+ 
+/**
+  * @brief  I2C开始
+  * @param  无
+  * @retval 无
+  */
+void OLED_I2C_Start(void)
+{
+	oled_module.SW_I2C_W_SDA(1);
+	dwt_time_oled->ECF_DWT_Delay(I2C_DELAY_TIME);
+	oled_module.SW_I2C_W_SCL(1);
+	dwt_time_oled->ECF_DWT_Delay(I2C_DELAY_TIME);
+	oled_module.SW_I2C_W_SDA(0);
+	dwt_time_oled->ECF_DWT_Delay(I2C_DELAY_TIME);
+	oled_module.SW_I2C_W_SCL(0);
+}
+ 
+/**
+  * @brief  I2C停止
+  * @param  无
+  * @retval 无
+  */
+void OLED_I2C_Stop(void)
+{
+	oled_module.SW_I2C_W_SDA(0);
+	dwt_time_oled->ECF_DWT_Delay(I2C_DELAY_TIME);
+	oled_module.SW_I2C_W_SCL(1);
+	dwt_time_oled->ECF_DWT_Delay(I2C_DELAY_TIME);
+	oled_module.SW_I2C_W_SDA(1);
+}
+ 
+/**
+  * @brief  I2C发送一个字节
+  * @param  Byte 要发送的一个字节
+  * @retval 无
+  */
+void OLED_I2C_SendByte(uint8_t Byte)
+{
+	uint8_t i;
+	for (i = 0; i < 8; i++)
+	{
+		oled_module.SW_I2C_W_SDA(Byte & (0x80 >> i));
+		dwt_time_oled->ECF_DWT_Delay(I2C_DELAY_TIME);
+		oled_module.SW_I2C_W_SCL(1);
+		dwt_time_oled->ECF_DWT_Delay(I2C_DELAY_TIME);
+		oled_module.SW_I2C_W_SCL(0);
+	}
+	dwt_time_oled->ECF_DWT_Delay(I2C_DELAY_TIME);
+	oled_module.SW_I2C_W_SCL(1);	//额外的一个时钟，不处理应答信号
+	dwt_time_oled->ECF_DWT_Delay(I2C_DELAY_TIME);
+	oled_module.SW_I2C_W_SCL(0);
+	dwt_time_oled->ECF_DWT_Delay(I2C_DELAY_TIME);
+}
+ 
 /**
   * @brief  OLED写命令
   * @param  Command 要写入的命令
@@ -12,13 +76,13 @@ Bsp_I2C_c oled_module(&oled_init_config);
   */
 void OLED_WriteCommand(uint8_t Command)
 {
-	oled_module.SW_I2C_Start();
-	oled_module.SW_I2C_Write_Byte(0x78);		//从机地址
-	oled_module.SW_I2C_Write_Byte(0x00);		//写命令
-	oled_module.SW_I2C_Write_Byte(Command); 
-	oled_module.SW_I2C_Stop();
+	OLED_I2C_Start();
+	OLED_I2C_SendByte(0x78);		//从机地址
+	OLED_I2C_SendByte(0x00);		//写命令
+	OLED_I2C_SendByte(Command); 
+	OLED_I2C_Stop();
 }
-
+ 
 /**
   * @brief  OLED写数据
   * @param  Data 要写入的数据
@@ -26,11 +90,11 @@ void OLED_WriteCommand(uint8_t Command)
   */
 void OLED_WriteData(uint8_t Data)
 {
-	oled_module.SW_I2C_Start();
-	oled_module.SW_I2C_Write_Byte(0x78);		//从机地址
-	oled_module.SW_I2C_Write_Byte(0x40);		//写数据
-	oled_module.SW_I2C_Write_Byte(Data);
-	oled_module.SW_I2C_Stop();
+	OLED_I2C_Start();
+	OLED_I2C_SendByte(0x78);		//从机地址
+	OLED_I2C_SendByte(0x40);		//写数据
+	OLED_I2C_SendByte(Data);
+	OLED_I2C_Stop();
 }
  
 /**
@@ -210,8 +274,6 @@ void OLED_ShowBinNum(uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Leng
   */
 void OLED_Init(void)
 {
-	
-
 	uint32_t i, j;
 	
 	for (i = 0; i < 1000; i++)			//上电延时
@@ -219,10 +281,8 @@ void OLED_Init(void)
 		for (j = 0; j < 1000; j++);
 	}
 	
-	//端口初始化
-	oled_module.I2C_SCL_H();
-	oled_module.I2C_SDA_H();
-
+	OLED_I2C_Init();			//端口初始化
+	
 	OLED_WriteCommand(0xAE);	//关闭显示
 	
 	OLED_WriteCommand(0xD5);	//设置显示时钟分频比/振荡器频率

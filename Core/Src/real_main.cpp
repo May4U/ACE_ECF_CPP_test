@@ -74,8 +74,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  HAL_Delay(168);
-  OLED_Init();
+  
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -99,7 +98,8 @@ int main(void)
 	// OLED_show_num(1, 10, 50, 0, 2);
 	// OLED_refresh_gram();//????
   /* USER CODE END 2 */
-    
+  HAL_Delay(168);
+  OLED_Init();  
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)

@@ -6,6 +6,7 @@ extern "C"{
 #endif
 
 #include "bsp_i2c.hpp"
+#include "bsp_dwt.hpp"
 #include "oledfont.h" 
 #include "math.h" 
 
