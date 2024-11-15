@@ -22,7 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "real_main.hpp"
-#include "oled_sw.hpp"
+#include "oled.hpp"
 #include "bsp_dwt.hpp"
 /* USER CODE END Includes */
 
@@ -55,7 +55,39 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-BSP_DWT_c* dwt_time_test = BSP_DWT_c::ECF_Get_DwtInstance();
+BSP_DWT_n::BSP_DWT_c* dwt_time_test = BSP_DWT_n::BSP_DWT_c::ECF_Get_DwtInstance();
+
+void oled_callback(BSP_I2C_n::BSP_I2C_c *register_instance)
+{
+    OLED_n::OLED_c *register_instance_ = (OLED_n::OLED_c*) register_instance;
+    switch(register_instance_->Callback_type_)
+    {
+    case BSP_I2C_n::I2C_Master:
+        if(register_instance_->CountFlag == 7)
+        {
+        register_instance_->BufFinshFlag = 0;
+        register_instance_->CountFlag = 0;
+        }
+        if(register_instance_->BufFinshFlag)
+        {
+        register_instance_->CountFlag ++;
+        register_instance_->HW_I2C_Transmit(register_instance_->OLED_CMDbuf[register_instance_->CountFlag], 4);
+        }
+        break;
+    case BSP_I2C_n::I2C_Mem:
+        if(register_instance_->BufFinshFlag)
+        {
+        register_instance_->HW_I2CAccessMem(0x40, register_instance_->OLED_GRAMbuf[register_instance_->CountFlag], 128, BSP_I2C_n::I2C_WRITE_MEM, I2C_MEMADD_SIZE_8BIT);
+        }
+        break;
+    default:
+            while (1)
+                ; // 未知传输模式, 程序停止 
+            break;
+    }
+}
+
+BSP_I2C_n::HW_I2C_Config_s oled_test = {&hi2c1, OLED_I2C_ADDRESS, BSP_I2C_n::I2C_DMA_MODE, oled_callback};
 /* USER CODE END 0 */
 
 /**
@@ -90,27 +122,16 @@ int main(void)
   MX_I2C1_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  // HAL_Delay(200);
-	// OLED_init();
-	// HAL_Delay(200);
-	// //OLED_operate_gram(PEN_CLEAR);//???
-	// //OLED_show_string(0,5,(uint8_t*)"show string"); 
-	// OLED_show_num(1, 10, 50, 0, 2);
-	// OLED_refresh_gram();//????
+  
   /* USER CODE END 2 */
   HAL_Delay(168);
-  OLED_Init();  
+  //OLED_Init();  
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-    //OLED_ShowChar(1,1,'A');//显示一个字符
-		//OLED_ShowString(1,3,"HelloWorld");//显示字符串
-		OLED_ShowNum(2,1,12345,5);//显示无符号十进制数
-		//OLED_ShowSignedNum(2,7,-66,2);//显示有符号十进制数
-		//OLED_ShowHexNum(3,1,0XAA66,4);//显示16进制数字
-		//OLED_ShowBinNum(4,1,0XAA55,16);//显示二进制
+    
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

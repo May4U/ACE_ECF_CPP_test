@@ -82,6 +82,8 @@ Core/Src/i2c.c \
 Core/Src/main.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Core/Src/stm32f4xx_it.c \
+Core/Src/syscalls.c \
+Core/Src/sysmem.c \
 Core/Src/system_stm32f4xx.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
@@ -171,12 +173,14 @@ AS_DEFS =
 
 # C defines
 C_DEFS =  \
+-DARM_MATH_CM4 \
 -DSTM32F407xx \
 -DUSE_HAL_DRIVER
 
 
 # CXX defines
 CXX_DEFS =  \
+-DARM_MATH_CM4 \
 -DSTM32F407xx \
 -DUSE_HAL_DRIVER
 
@@ -223,7 +227,7 @@ CXXFLAGS += $(ASSEMBLER_LIST_OUTPUT_FLAG)
 LDSCRIPT = STM32F407VETx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
+LIBS = -lc -lm -lnosys -lstdc++ 
 LIBDIR = \
 
 
