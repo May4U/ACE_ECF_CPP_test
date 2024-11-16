@@ -8,13 +8,13 @@ namespace OLED_n
     /**
      * @brief 硬件OLED初始化构造函数
      * 
-     * @param BSP_I2C_n::HW_I2C_Config_s HW_I2C_Config 
+     * @param BSP_I2C_n::HW_I2C_Config_s HW_I2C_Config
      */
-    OLED_c::OLED_c(BSP_I2C_n::HW_I2C_Config_s HW_I2C_Config)
-                        ://设置oled参数
-                        BSP_I2C_c(HW_I2C_Config)                   
+    OLED_c::OLED_c(BSP_I2C_n::HW_I2C_Config_s *HW_I2C_Config)                
     {
         oled_mode_ = Hardware;
+        HW_I2C_Config->private_data = reinterpret_cast<void *>(this);
+        i2c_instance_ = new BSP_I2C_n::BSP_I2C_c(HW_I2C_Config);
     }
 
     /**
@@ -22,11 +22,19 @@ namespace OLED_n
      * 
      * @param BSP_I2C_n::SW_I2C_Config_s SW_I2C_Config 
      */
-    OLED_c::OLED_c(BSP_I2C_n::SW_I2C_Config_s SW_I2C_Config)
-                        ://设置oled参数
-                        BSP_I2C_c(SW_I2C_Config) 
+    OLED_c::OLED_c(BSP_I2C_n::SW_I2C_Config_s *SW_I2C_Config)
     {
         oled_mode_ = Software;
+        SW_I2C_Config->private_data = reinterpret_cast<void *>(this);
+        i2c_instance_ = new BSP_I2C_n::BSP_I2C_c(SW_I2C_Config);
+    }
+
+    OLED_c::~OLED_c() {
+        delete i2c_instance_;
+    }
+
+    BSP_I2C_n::I2C_Callback_e OLED_c::Get_I2C_Callback_Type() {
+        return i2c_instance_->Callback_type_;
     }
 
 /******************************硬件oled库*********************************************** */
@@ -48,7 +56,7 @@ namespace OLED_n
      */
     void OLED_c::HW_Init(void)
     {
-        HW_I2CAccessMem(OLED_CMD, OLED_Init_CMD, 29, BSP_I2C_n::I2C_WRITE_MEM, I2C_MEMADD_SIZE_8BIT);
+        i2c_instance_->HW_I2CAccessMem(OLED_CMD, OLED_n::OLED_Init_CMD, 29, BSP_I2C_n::I2C_WRITE_MEM, I2C_MEMADD_SIZE_8BIT);
     }
 
     /**
@@ -255,7 +263,7 @@ namespace OLED_n
                 }
             }
             BufFinshFlag = 1;
-            HW_I2C_Transmit(OLED_CMDbuf[0],4);
+            i2c_instance_->HW_I2C_Transmit(OLED_CMDbuf[0],4);
         }
     }
 
@@ -304,11 +312,11 @@ namespace OLED_n
 
     /*****************************模拟oled库********************************************** */
     /*引脚初始化*/
-    void OLED_c::SW_I2C_Init(void)
+    void OLED_c::SW_OLED_Init(void)
     {
         
-        SW_I2C_W_SCL(1);
-        SW_I2C_W_SDA(1);
+        i2c_instance_->SW_I2C_W_SCL(1);
+        i2c_instance_->SW_I2C_W_SDA(1);
     }
     
     /**
@@ -316,15 +324,15 @@ namespace OLED_n
      * @param  无
      * @retval 无
      */
-    void OLED_c::SW_I2C_Start(void)
+    void OLED_c::SW_OLED_Start(void)
     {
-        SW_I2C_W_SDA(1);
+        i2c_instance_->SW_I2C_W_SDA(1);
         dwt_time_oled->ECF_DWT_Delay_ms(I2C_DELAY_TIME);
-        SW_I2C_W_SCL(1);
+        i2c_instance_->SW_I2C_W_SCL(1);
         dwt_time_oled->ECF_DWT_Delay_ms(I2C_DELAY_TIME);
-        SW_I2C_W_SDA(0);
+        i2c_instance_->SW_I2C_W_SDA(0);
         dwt_time_oled->ECF_DWT_Delay_ms(I2C_DELAY_TIME);
-        SW_I2C_W_SCL(0);
+        i2c_instance_->SW_I2C_W_SCL(0);
     }
     
     /**
@@ -332,13 +340,13 @@ namespace OLED_n
      * @param  无
      * @retval 无
      */
-    void OLED_c::SW_I2C_Stop(void)
+    void OLED_c::SW_OLED_Stop(void)
     {
-        SW_I2C_W_SDA(0);
+        i2c_instance_->SW_I2C_W_SDA(0);
         dwt_time_oled->ECF_DWT_Delay_ms(I2C_DELAY_TIME);
-        SW_I2C_W_SCL(1);
+        i2c_instance_->SW_I2C_W_SCL(1);
         dwt_time_oled->ECF_DWT_Delay_ms(I2C_DELAY_TIME);
-        SW_I2C_W_SDA(1);
+        i2c_instance_->SW_I2C_W_SDA(1);
     }
     
     /**
@@ -346,21 +354,21 @@ namespace OLED_n
      * @param  Byte 要发送的一个字节
      * @retval 无
      */
-    void OLED_c::SW_I2C_SendByte(uint8_t Byte)
+    void OLED_c::SW_OLED_SendByte(uint8_t Byte)
     {
         uint8_t i;
         for (i = 0; i < 8; i++)
         {
-            SW_I2C_W_SDA(Byte & (0x80 >> i));
+            i2c_instance_->SW_I2C_W_SDA(Byte & (0x80 >> i));
             dwt_time_oled->ECF_DWT_Delay_ms(I2C_DELAY_TIME);
-            SW_I2C_W_SCL(1);
+            i2c_instance_->SW_I2C_W_SCL(1);
             dwt_time_oled->ECF_DWT_Delay_ms(I2C_DELAY_TIME);
-            SW_I2C_W_SCL(0);
+            i2c_instance_->SW_I2C_W_SCL(0);
         }
         dwt_time_oled->ECF_DWT_Delay_ms(I2C_DELAY_TIME);
-        SW_I2C_W_SCL(1);	//额外的一个时钟，不处理应答信号
+        i2c_instance_->SW_I2C_W_SCL(1);	//额外的一个时钟，不处理应答信号
         dwt_time_oled->ECF_DWT_Delay_ms(I2C_DELAY_TIME);
-        SW_I2C_W_SCL(0);
+        i2c_instance_->SW_I2C_W_SCL(0);
         dwt_time_oled->ECF_DWT_Delay_ms(I2C_DELAY_TIME);
     }
     
@@ -371,11 +379,11 @@ namespace OLED_n
      */
     void OLED_c::SW_WriteCommand(uint8_t Command)
     {
-        SW_I2C_Start();
-        SW_I2C_SendByte(0x78);		//从机地址
-        SW_I2C_SendByte(0x00);		//写命令
-        SW_I2C_SendByte(Command); 
-        SW_I2C_Stop();
+        SW_OLED_Start();
+        SW_OLED_SendByte(0x78);		//从机地址
+        SW_OLED_SendByte(0x00);		//写命令
+        SW_OLED_SendByte(Command); 
+        SW_OLED_Stop();
     }
     
     /**
@@ -385,11 +393,11 @@ namespace OLED_n
      */
     void OLED_c::SW_WriteData(uint8_t Data)
     {
-        SW_I2C_Start();
-        SW_I2C_SendByte(0x78);		//从机地址
-        SW_I2C_SendByte(0x40);		//写数据
-        SW_I2C_SendByte(Data);
-        SW_I2C_Stop();
+        SW_OLED_Start();
+        SW_OLED_SendByte(0x78);		//从机地址
+        SW_OLED_SendByte(0x40);		//写数据
+        SW_OLED_SendByte(Data);
+        SW_OLED_Stop();
     }
     
     /**
@@ -506,7 +514,7 @@ namespace OLED_n
             for (j = 0; j < 1000; j++);
         }
         
-        SW_I2C_Init();			//端口初始化
+        SW_OLED_Init();			//端口初始化
         
         SW_WriteCommand(0xAE);	//关闭显示
         
@@ -581,7 +589,8 @@ namespace OLED_n
         switch(oled_mode_)
         {
         case Hardware:
-            HW_Operate_Gram(PEN_CLEAR);
+            //HW_Operate_Gram(PEN_CLEAR);
+            HW_Refresh_Gram();
             break;
         case Software:
             SW_Clear();

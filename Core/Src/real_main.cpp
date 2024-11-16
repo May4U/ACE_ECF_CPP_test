@@ -57,27 +57,27 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 BSP_DWT_n::BSP_DWT_c* dwt_time_test = BSP_DWT_n::BSP_DWT_c::ECF_Get_DwtInstance();
 
-void oled_callback(BSP_I2C_n::BSP_I2C_c *register_instance)
+void oled_callback(BSP_I2C_n::BSP_I2C_c *register_instance, void *data)
 {
-    OLED_n::OLED_c *register_instance_ = (OLED_n::OLED_c*) register_instance;
-    switch(register_instance_->Callback_type_)
+    OLED_n::OLED_c *oled_instance = (OLED_n::OLED_c*) data;
+    switch(register_instance->Callback_type_)
     {
     case BSP_I2C_n::I2C_Master:
-        if(register_instance_->CountFlag == 7)
+        if(oled_instance->CountFlag == 7)
         {
-        register_instance_->BufFinshFlag = 0;
-        register_instance_->CountFlag = 0;
+            oled_instance->BufFinshFlag = 0;
+            oled_instance->CountFlag = 0;
         }
-        if(register_instance_->BufFinshFlag)
+        if(oled_instance->BufFinshFlag)
         {
-        register_instance_->CountFlag ++;
-        register_instance_->HW_I2C_Transmit(register_instance_->OLED_CMDbuf[register_instance_->CountFlag], 4);
+            oled_instance->CountFlag ++;
+            register_instance->HW_I2C_Transmit(oled_instance->OLED_CMDbuf[oled_instance->CountFlag], 4);
         }
         break;
     case BSP_I2C_n::I2C_Mem:
-        if(register_instance_->BufFinshFlag)
+        if(oled_instance->BufFinshFlag)
         {
-        register_instance_->HW_I2CAccessMem(0x40, register_instance_->OLED_GRAMbuf[register_instance_->CountFlag], 128, BSP_I2C_n::I2C_WRITE_MEM, I2C_MEMADD_SIZE_8BIT);
+            register_instance->HW_I2CAccessMem(0x40, oled_instance->OLED_GRAMbuf[oled_instance->CountFlag], 128, BSP_I2C_n::I2C_WRITE_MEM, I2C_MEMADD_SIZE_8BIT);
         }
         break;
     default:
@@ -88,6 +88,8 @@ void oled_callback(BSP_I2C_n::BSP_I2C_c *register_instance)
 }
 
 BSP_I2C_n::HW_I2C_Config_s oled_test = {&hi2c1, OLED_I2C_ADDRESS, BSP_I2C_n::I2C_DMA_MODE, oled_callback};
+
+
 /* USER CODE END 0 */
 
 /**
@@ -122,10 +124,13 @@ int main(void)
   MX_I2C1_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  
+  HAL_Delay(100);
+  OLED_n::OLED_c oled_instance(&oled_test);
+  oled_instance.OLED_Init();
+  oled_instance.OLED_Show_Num(1, 2, 50, 2);
+  oled_instance.OLED_Clear();
   /* USER CODE END 2 */
-  HAL_Delay(168);
-  //OLED_Init();  
+  
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)

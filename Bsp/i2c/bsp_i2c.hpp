@@ -76,23 +76,34 @@ namespace BSP_I2C_n
     } I2C_RW_Status_e;
  
     
-    struct HW_I2C_Config_s;
+    class BSP_I2C_c;
 
     /* 模拟I2C 初始化结构体配置 */
     typedef struct
     {
-        GPIO_TypeDef *i2c_scl_port;         //i2c scl的gpio端口配置
-        uint16_t i2c_scl_pin;          //i2c scl的gpio引脚配置
-        GPIO_TypeDef *i2c_sda_port;         //i2c sda的gpio端口配置
-        uint16_t i2c_sda_pin;          //i2c sda的gpio引脚配置
-        uint8_t device_address;            // 设置写入数据的地址
+        GPIO_TypeDef *i2c_scl_port;         // i2c scl的gpio端口配置
+        uint16_t i2c_scl_pin;               // i2c scl的gpio引脚配置
+        GPIO_TypeDef *i2c_sda_port;         // i2c sda的gpio端口配置
+        uint16_t i2c_sda_pin;               // i2c sda的gpio引脚配置
+        uint8_t device_address;             // 设置写入数据的地址
+        void *private_data;                 // 私有的数据，用于在回调函数中获得数据，如果不是直接使用i2c，不用初始化
     } SW_I2C_Config_s;
+
+    /* 硬件I2C 初始化结构体配置 */
+    struct HW_I2C_Config_s
+    {
+        I2C_HandleTypeDef *i2c_handle;       // i2c handle
+        uint8_t device_address;             // 设置写入数据的地址
+        I2C_Work_Mode_e work_mode;         // 工作模式
+        void (*hw_i2c_callback)(BSP_I2C_c* I2C_Instance, void *private_data);
+        void *private_data;// 私有的数据，用于在回调函数中获得数据，如果不是直接使用i2c，不用初始化
+    };
 
     class BSP_I2C_c
     {
     public:
-        BSP_I2C_c(SW_I2C_Config_s I2C_Init_Config);
-        BSP_I2C_c(HW_I2C_Config_s I2C_Init_Config); 
+        BSP_I2C_c(SW_I2C_Config_s *I2C_Init_Config);
+        BSP_I2C_c(HW_I2C_Config_s *I2C_Init_Config); 
         void SW_I2C_Init(void);
         /*硬件I2C函数*/
         void HW_I2C_Transmit(uint8_t *data, uint16_t size);     //I2C发送数据
@@ -107,7 +118,7 @@ namespace BSP_I2C_n
         uint8_t readOneByte(uint8_t device_address, uint8_t register_address);
         /*以下为回调函数*/
         static void BSP_HW_I2C_TxCallback(I2C_HandleTypeDef *hi2c, I2C_Callback_e Callback_type);
-        I2C_Callback_e Callback_type_;          //回调类型
+        I2C_Callback_e Callback_type_ = I2C_Master;          //回调类型
         /*模拟I2C函数*/
         void SW_I2C_W_SCL(uint8_t bit);           //写SCL   
         void SW_I2C_W_SDA(uint8_t bit);           //写SDA
@@ -143,16 +154,8 @@ namespace BSP_I2C_n
         
         uint8_t *rx_buffer;                     // 接收缓冲区指针
         uint8_t rx_len;                         // 接收长度 
-        void (*hw_i2c_callback)(BSP_I2C_c* I2C_Instance);        // 接收完成后的回调函数
-    };
-
-    /* 硬件I2C 初始化结构体配置 */
-    struct HW_I2C_Config_s
-    {
-        I2C_HandleTypeDef *i2c_handle;       // i2c handle
-        uint8_t device_address;             // 设置写入数据的地址
-        I2C_Work_Mode_e work_mode;         // 工作模式
-        void (*hw_i2c_callback)(BSP_I2C_c* I2C_Instance);
+        void (*hw_i2c_callback)(BSP_I2C_c* I2C_Instance, void* private_data);// 接收完成后的回调函数
+        void* private_data;// 私有的数据，用于在回调函数中获得数据，如果不是直接使用i2c，不用初始化
     };
 }
 

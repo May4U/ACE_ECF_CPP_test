@@ -64,12 +64,13 @@ namespace BSP_I2C_n
      *          I2C_Work_Mode_e work_mode;       // 工作模式
      * @param hw_i2c_callback 
      */
-    BSP_I2C_c::BSP_I2C_c(HW_I2C_Config_s I2C_Init_Config)
+    BSP_I2C_c::BSP_I2C_c(HW_I2C_Config_s *I2C_Init_Config)
                                 ://设置i2c实例和回调函数
-                                device_address_(I2C_Init_Config.device_address),
-                                i2c_handle_(I2C_Init_Config.i2c_handle),
-                                work_mode_(I2C_Init_Config.work_mode),
-                                hw_i2c_callback(I2C_Init_Config.hw_i2c_callback)
+                                device_address_(I2C_Init_Config->device_address),
+                                i2c_handle_(I2C_Init_Config->i2c_handle),
+                                work_mode_(I2C_Init_Config->work_mode),
+                                hw_i2c_callback(I2C_Init_Config->hw_i2c_callback),
+                                private_data(I2C_Init_Config->private_data)
     {
         //将当前实例加入指针数组中
         i2c_instance_[idx_++] = this;
@@ -94,13 +95,14 @@ namespace BSP_I2C_n
      * 			@arg uint8_t device_address	没有可以乱写
      * 			@example SW_I2C_Config_s oled_init_config = {GPIOC, GPIO_PIN_8, GPIOC, GPIO_PIN_9, 0x78}
      */
-    BSP_I2C_c::BSP_I2C_c(SW_I2C_Config_s I2C_Init_Config)
+    BSP_I2C_c::BSP_I2C_c(SW_I2C_Config_s *I2C_Init_Config)
                             ://设置i2c实例
-                            device_address_(I2C_Init_Config.device_address),
-                            i2c_scl_port_(I2C_Init_Config.i2c_scl_port),
-                            i2c_scl_pin_(I2C_Init_Config.i2c_scl_pin),
-                            i2c_sda_port_(I2C_Init_Config.i2c_sda_port),
-                            i2c_sda_pin_(I2C_Init_Config.i2c_sda_pin)				
+                            device_address_(I2C_Init_Config->device_address),
+                            i2c_scl_port_(I2C_Init_Config->i2c_scl_port),
+                            i2c_scl_pin_(I2C_Init_Config->i2c_scl_pin),
+                            i2c_sda_port_(I2C_Init_Config->i2c_sda_port),
+                            i2c_sda_pin_(I2C_Init_Config->i2c_sda_pin),
+                            private_data(I2C_Init_Config->private_data)		
     {
         //将当前实例加入指针数组中
         i2c_instance_[idx_++] = this;
@@ -243,7 +245,7 @@ namespace BSP_I2C_n
             {
                 if (i2c_instance_[i]->hw_i2c_callback != NULL) // 回调函数不为空
                 {
-                    i2c_instance_[i]->hw_i2c_callback(i2c_instance_[i]);
+                    i2c_instance_[i]->hw_i2c_callback(i2c_instance_[i], i2c_instance_[i]->private_data);
                     i2c_instance_[i]->Callback_type_ = Callback_type;
                 }
                 return;

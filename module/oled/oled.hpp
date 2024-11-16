@@ -67,7 +67,7 @@ namespace OLED_n
      * @brief 
      * 
      */
-    class OLED_c : public BSP_I2C_n::BSP_I2C_c
+    class OLED_c
     {
     public:
         /*OLED对外函数*/
@@ -81,9 +81,8 @@ namespace OLED_n
         void OLED_Show_BinNum(uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Length);
         
         //BSP_I2C_n::BSP_I2C_c oled_i2c_instance_;
-        OLED_c(BSP_I2C_n::HW_I2C_Config_s HW_I2C_Config);
-        OLED_c(BSP_I2C_n::SW_I2C_Config_s SW_I2C_Config);
-        OLED_c();
+        OLED_c(BSP_I2C_n::HW_I2C_Config_s *HW_I2C_Config);
+        OLED_c(BSP_I2C_n::SW_I2C_Config_s *SW_I2C_Config);
         ~OLED_c();
 
         uint8_t OLED_GRAM[128][8];
@@ -93,9 +92,13 @@ namespace OLED_n
         uint8_t CountFlag = 0; 
         uint8_t BufFinshFlag = 0; 
     protected:
+        BSP_I2C_n::BSP_I2C_c *i2c_instance_;
+
         //oled_init_t oled_init_;
-        static oled_mode_e oled_mode_;
+        oled_mode_e oled_mode_;
         /*硬件OLED库*/
+
+        BSP_I2C_n::I2C_Callback_e Get_I2C_Callback_Type();
         
         void HW_Operate_Gram(pen_typedef pen);
         void HW_Refresh_Gram(void);
@@ -108,10 +111,10 @@ namespace OLED_n
         void HW_Show_Num(uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Length);
         void HW_Init(void);
         /*模拟OLED库*/
-        void SW_I2C_Init(void);
-        void SW_I2C_Start(void);
-        void SW_I2C_Stop(void);
-        void SW_I2C_SendByte(uint8_t Byte);
+        void SW_OLED_Init(void);
+        void SW_OLED_Start(void);
+        void SW_OLED_Stop(void);
+        void SW_OLED_SendByte(uint8_t Byte);
         void SW_WriteCommand(uint8_t Command);
         void SW_WriteData(uint8_t Data);
         void SW_SetCursor(uint8_t Y, uint8_t X);

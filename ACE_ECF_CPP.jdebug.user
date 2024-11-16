@@ -1,31 +1,35 @@
 
 
 
-Breakpoint=D:/Documents/Github/ACE_ECF_25/Core/Src/real_main.cpp:98, State=BP_STATE_ON
-Breakpoint=D:/Documents/Github/ACE_ECF_25/Bsp/i2c/bsp_i2c.cpp:116:1, State=BP_STATE_DISABLED
-Breakpoint=D:/Documents/Github/ACE_ECF_25/module/oled/oled.cpp:19, State=BP_STATE_DISABLED
-Breakpoint=D:/Documents/Github/ACE_ECF_25/module/oled/oled.cpp:31:11, State=BP_STATE_DISABLED
-Breakpoint=D:/Documents/Github/ACE_ECF_25/module/oled/oled.cpp:35:4, State=BP_STATE_DISABLED
-OpenDocument="startup_stm32f407xx.s", FilePath="D:/Documents/Github/ACE_ECF_25/startup_stm32f407xx.s", Line=51
-OpenDocument="stm32f4xx_hal.c", FilePath="D:/Documents/Github/ACE_ECF_25/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c", Line=246
-OpenDocument="stm32f4xx_it.c", FilePath="D:/Documents/Github/ACE_ECF_25/Core/Src/stm32f4xx_it.c", Line=224
-OpenDocument="oled.cpp", FilePath="D:/Documents/Github/ACE_ECF_25/module/oled/oled.cpp", Line=0
-OpenDocument="real_main.cpp", FilePath="D:/Documents/Github/ACE_ECF_25/Core/Src/real_main.cpp", Line=55
-OpenDocument="stm32f4xx_hal_i2c.c", FilePath="D:/Documents/Github/ACE_ECF_25/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c", Line=4882
-OpenDocument="core_cm4.h", FilePath="D:/Documents/Github/ACE_ECF_25/Drivers/CMSIS/Include/core_cm4.h", Line=2013
-OpenDocument="bsp_i2c.cpp", FilePath="D:/Documents/Github/ACE_ECF_25/Bsp/i2c/bsp_i2c.cpp", Line=170
+Breakpoint=D:/Documents/GitHub/ACE_ECF_CPP_test/Core/Src/real_main.cpp:61, State=BP_STATE_ON
+Breakpoint=D:/Documents/GitHub/ACE_ECF_CPP_test/Core/Src/real_main.cpp:127, State=BP_STATE_DISABLED
+Breakpoint=D:/Documents/GitHub/ACE_ECF_CPP_test/Core/Src/real_main.cpp:128, State=BP_STATE_ON
+Breakpoint=D:/Documents/GitHub/ACE_ECF_CPP_test/Core/Src/real_main.cpp:129, State=BP_STATE_ON
+Breakpoint=D:/Documents/GitHub/ACE_ECF_CPP_test/Core/Src/real_main.cpp:130, State=BP_STATE_ON
+Breakpoint=D:/Documents/GitHub/ACE_ECF_CPP_test/Core/Src/real_main.cpp:131, State=BP_STATE_ON
+Breakpoint=D:/Documents/GitHub/ACE_ECF_CPP_test/Bsp/i2c/bsp_i2c.cpp:75, State=BP_STATE_ON
+Breakpoint=D:/Documents/GitHub/ACE_ECF_CPP_test/Bsp/i2c/bsp_i2c.cpp:124:5, State=BP_STATE_DISABLED
+Breakpoint=D:/Documents/GitHub/ACE_ECF_CPP_test/module/oled/oled.cpp:50:5, State=BP_STATE_DISABLED
+Breakpoint=D:/Documents/GitHub/ACE_ECF_CPP_test/module/oled/oled.cpp:658, State=BP_STATE_DISABLED
+OpenDocument="bsp_i2c.cpp", FilePath="D:/Documents/GitHub/ACE_ECF_CPP_test/Bsp/i2c/bsp_i2c.cpp", Line=59
+OpenDocument="oled.hpp", FilePath="D:/Documents/GitHub/ACE_ECF_CPP_test/module/oled/oled.hpp", Line=63
+OpenDocument="real_main.cpp", FilePath="D:/Documents/GitHub/ACE_ECF_CPP_test/Core/Src/real_main.cpp", Line=119
+OpenDocument="startup_stm32f407xx.s", FilePath="D:/Documents/GitHub/ACE_ECF_CPP_test/startup_stm32f407xx.s", Line=51
+OpenDocument="oled.cpp", FilePath="D:/Documents/GitHub/ACE_ECF_CPP_test/module/oled/oled.cpp", Line=87
+OpenDocument="stm32f4xx_hal_i2c.c", FilePath="D:/Documents/GitHub/ACE_ECF_CPP_test/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c", Line=3196
+OpenDocument="stm32f4xx_hal_dma.c", FilePath="D:/Documents/GitHub/ACE_ECF_CPP_test/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c", Line=476
 OpenToolbar="Debug", Floating=0, x=0, y=0
-OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=0, w=782, h=1251, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
-OpenWindow="Source Files", DockArea=LEFT, x=0, y=1, w=372, h=503, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Memory 1", DockArea=BOTTOM, x=1, y=0, w=1378, h=337, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x0
-OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=0, w=372, h=747, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=1357, h=337, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=1, w=782, h=334, TabPos=1, TopOfStack=0, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=0, w=372, h=609, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=0, w=782, h=260, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Memory 1", DockArea=BOTTOM, x=1, y=0, w=966, h=337, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x0
+OpenWindow="Watched Data 1", DockArea=RIGHT, x=0, y=1, w=782, h=334, TabPos=0, TopOfStack=1, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Console", DockArea=BOTTOM, x=0, y=0, w=953, h=337, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
 SmartViewPlugin="", Page="", Toolbar="Hidden", Window="SmartView 1"
-TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[506;146;114;146;2058]
+TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[103;183;496]
+TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh";"Access"], ColWidths=[174;165;158;100;168]
+TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[506;146;114;146;728]
 TableHeader="Power Sampling", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
-TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[103;183;504]
 TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
-TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[26;26;26;40]
-TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh";"Access"], ColWidths=[174;165;158;136;126]
-WatchedExpression="oled_module", Window=Watched Data 1
-WatchedExpression="register_instance", Window=Watched Data 1
+TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[200;100;100;359]
+WatchedExpression="oled_instance", RefreshRate=5, Window=Watched Data 1
